@@ -93,12 +93,10 @@ fi
 KEY_OUTPUT="$("$XRAY_BIN" x25519 2>/dev/null || true)"
 
 PRIVATE_KEY="$(printf '%s\n' "$KEY_OUTPUT" \
-    | sed -nE 's/.*Private key: *([^[:space:]]+).*/\1/p' \
-    | head -n1)"
+    | awk -F': ' '/^PrivateKey:/ {print $2; exit}')"
 
 PUBLIC_KEY="$(printf '%s\n' "$KEY_OUTPUT" \
-    | sed -nE 's/.*Public key: *([^[:space:]]+).*/\1/p' \
-    | head -n1)"
+    | awk -F': ' '/^Password \(PublicKey\):/ {print $2; exit}')"
 
 # Some Xray builds use different labels.
 if [[ -z "$PRIVATE_KEY" ]]; then
@@ -109,7 +107,7 @@ fi
 
 if [[ -z "$PUBLIC_KEY" ]]; then
     PUBLIC_KEY="$(printf '%s\n' "$KEY_OUTPUT" \
-        | sed -nE 's/.*Password: *([^[:space:]]+).*/\1/p' \
+        | sed -nE 's/.*Password \(PublicKey\): *([^[:space:]]+).*/\1/p' \
         | head -n1)"
 fi
 
